@@ -12,6 +12,7 @@ import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.apache.cordova.PluginResult;
 
 import java.util.Iterator;
 
@@ -31,7 +32,7 @@ public class PushPlugin extends CordovaPlugin {
 	private static String gSenderID;
 	private static Bundle gCachedExtras = null;
     private static boolean gForeground = false;
-
+    private static CallbackContext gcmPushCallbackContext;
 	/**
 	 * Gets the application context from cordova's main activity.
 	 * @return the application context
@@ -47,6 +48,7 @@ public class PushPlugin extends CordovaPlugin {
 
 		Log.v(TAG, "execute: action=" + action);
 
+        gcmPushCallbackContext = callbackContext;
 		if (REGISTER.equals(action)) {
 
 			Log.v(TAG, "execute: data=" + data.toString());
@@ -63,8 +65,13 @@ public class PushPlugin extends CordovaPlugin {
 				Log.v(TAG, "execute: ECB=" + gECB + " senderID=" + gSenderID);
 
 				GCMRegistrar.register(getApplicationContext(), gSenderID);
-				result = true;
-				callbackContext.success();
+				
+                result = true;
+				
+                PluginResult pluginResult = new PluginResult(PluginResult.Status.OK,result);
+                pluginResult.setKeepCallback(true);
+                callbackContext.sendPluginResult(pluginResult); 
+                //callbackContext.success();
 			} catch (JSONException e) {
 				Log.e(TAG, "execute: Got JSON Exception " + e.getMessage());
 				result = false;
@@ -97,13 +104,25 @@ public class PushPlugin extends CordovaPlugin {
 	 * Sends a json object to the client as parameter to a method which is defined in gECB.
 	 */
 	public static void sendJavascript(JSONObject _json) {
-		String _d = "javascript:" + gECB + "(" + _json.toString() + ")";
-		Log.v(TAG, "sendJavascript: " + _d);
+		//String _d = "javascript:" + gECB + "(" + _json.toString() + ")";
+		//Log.v(TAG, "sendJavascript: " + _d);
 
-		if (gECB != null && gWebView != null) {
-			gWebView.sendJavascript(_d);
-		}
-	}
+		//if (gECB != null && gWebView != null) {
+		//	gWebView.sendJavascript(_d);
+		//}
+        if (gcmPushCallbackContext != null) {
+            try{    
+                JSONObject jsMessage = new JSONObject().put("method_name",gECB);
+                jsMessage.put("method_params",_json);
+                PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, jsMessage);
+                pluginResult.setKeepCallback(true);
+                gcmPushCallbackContext.sendPluginResult(pluginResult); 
+            }catch( JSONException e){
+                Log.e(TAG, "extrasToJSON: JSON exception");
+            }
+        }
+        gWebView.postMessage("pushnotification", 1);
+    }
 
 	/*
 	 * Sends the pushbundle extras to the client application.
@@ -125,6 +144,7 @@ public class PushPlugin extends CordovaPlugin {
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         super.initialize(cordova, webView);
         gForeground = true;
+        gcmPushCallbackContext = null;
     }
 
 	@Override

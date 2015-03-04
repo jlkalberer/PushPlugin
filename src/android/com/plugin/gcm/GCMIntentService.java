@@ -15,6 +15,10 @@ import android.util.Log;
 
 import com.google.android.gcm.GCMBaseIntentService;
 
+import android.net.Uri; 
+import android.media.Ringtone; 
+import android.media.RingtoneManager;
+
 @SuppressLint("NewApi")
 public class GCMIntentService extends GCMBaseIntentService {
 
@@ -70,7 +74,11 @@ public class GCMIntentService extends GCMBaseIntentService {
 			}
 			else {
 				extras.putBoolean("foreground", false);
-
+                
+                Uri notificationUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notificationUri);
+                r.play();
+                
                 // Send a notification if there is a message
                 if (extras.getString("message") != null && extras.getString("message").length() != 0) {
                     createNotification(context, extras);
