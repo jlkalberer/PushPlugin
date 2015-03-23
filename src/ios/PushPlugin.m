@@ -203,25 +203,6 @@
 
     if (notificationMessage && self.callback)
     {
-        NSMutableString *jsonStr = [NSMutableString stringWithFormat:@"{\"method_name\":\"%@\",\"method_params\":",self.callback];
-
-        [self parseDictionary:notificationMessage intoJSON:jsonStr];
-        
-        if (isInline)
-        {
-            [jsonStr appendFormat:@"foreground:\"%d\"", 1];
-            isInline = NO;
-        }
-		else
-            [jsonStr appendFormat:@"foreground:\"%d\"", 0];
-
-        [jsonStr appendString:@"}"];
-
-        NSLog(@"Msg: %@", jsonStr);
-        
-        //NSString * jsCallBack = [NSString stringWithFormat:@"%@(%@);", self.callback, jsonStr];
-        //[self.webView stringByEvaluatingJavaScriptFromString:jsCallBack];
-        
         NSDictionary *jDict = @{
                 @"method_name":self.callback,
                 @"method_params":self.notificationMessage
