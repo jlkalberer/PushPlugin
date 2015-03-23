@@ -38,7 +38,8 @@
 }
 
 @property (nonatomic, copy) NSString *callbackId;
-@property (nonatomic, copy) NSString *notificationCallbackId;
+@property (retain, nonatomic) NSString *notificationCallbackId;
+//@property (nonatomic, copy) NSString *notificationCallbackId;
 @property (nonatomic, copy) NSString *callback;
 
 @property (nonatomic, strong) NSDictionary *notificationMessage;

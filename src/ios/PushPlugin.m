@@ -35,6 +35,7 @@
 @synthesize callback;
 
 
+
 - (void)unregister:(CDVInvokedUrlCommand*)command;
 {
 	self.callbackId = command.callbackId;
@@ -46,7 +47,8 @@
 - (void)register:(CDVInvokedUrlCommand*)command;
 {
 	self.callbackId = command.callbackId;
-
+    self.notificationCallbackId = command.callbackId;
+    
     NSMutableDictionary* options = [command.arguments objectAtIndex:0];
 
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 80000
@@ -201,10 +203,10 @@
 
     if (notificationMessage && self.callback)
     {
-        NSMutableString *jsonStr = [NSMutableString stringWithString:@"{"];
+        NSMutableString *jsonStr = [NSMutableString stringWithFormat:@"{\"method_name\":\"%@\",\"method_params\":",self.callback];
 
         [self parseDictionary:notificationMessage intoJSON:jsonStr];
-
+        
         if (isInline)
         {
             [jsonStr appendFormat:@"foreground:\"%d\"", 1];
@@ -216,10 +218,17 @@
         [jsonStr appendString:@"}"];
 
         NSLog(@"Msg: %@", jsonStr);
-
-        NSString * jsCallBack = [NSString stringWithFormat:@"%@(%@);", self.callback, jsonStr];
-        [self.webView stringByEvaluatingJavaScriptFromString:jsCallBack];
-
+        
+        //NSString * jsCallBack = [NSString stringWithFormat:@"%@(%@);", self.callback, jsonStr];
+        //[self.webView stringByEvaluatingJavaScriptFromString:jsCallBack];
+        
+        NSDictionary *jDict = @{
+                @"method_name":self.callback,
+                @"method_params":self.notificationMessage
+        };
+        CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:jDict];
+        [commandResult setKeepCallbackAsBool:YES];
+        [self.commandDelegate sendPluginResult:commandResult callbackId:self.callbackId];
         self.notificationMessage = nil;
     }
 }
@@ -252,7 +261,7 @@
 - (void)setApplicationIconBadgeNumber:(CDVInvokedUrlCommand *)command {
 
     self.callbackId = command.callbackId;
-
+    self.notificationCallbackId = command.callbackId;
     NSMutableDictionary* options = [command.arguments objectAtIndex:0];
     int badge = [[options objectForKey:@"badge"] intValue] ?: 0;
 
@@ -265,6 +274,7 @@
     if (self.callbackId != nil)
     {
         CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:message];
+        [commandResult setKeepCallbackAsBool:YES];
         [self.commandDelegate sendPluginResult:commandResult callbackId:self.callbackId];
     }
 }
@@ -273,7 +283,7 @@
 {
     NSString        *errorMessage = (error) ? [NSString stringWithFormat:@"%@ - %@", message, [error localizedDescription]] : message;
     CDVPluginResult *commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errorMessage];
-
+    [commandResult setKeepCallbackAsBool:YES];
     [self.commandDelegate sendPluginResult:commandResult callbackId:self.callbackId];
 }
 
