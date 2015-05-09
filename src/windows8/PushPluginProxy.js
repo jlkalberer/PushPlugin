@@ -7,9 +7,7 @@
 // taskEntryPoint: Task entry point for the background task.
 //
 function registerBackgroundTask(taskName, taskEntryPoint, success, fail) {
-    //
-    // Check for existing registrations of this background task.
-    //
+    Windows.ApplicationModel.Background.BackgroundExecutionManager.requestAccessAsync();
 
     var taskRegistered = false;
 
