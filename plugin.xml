@@ -163,7 +163,7 @@
       <merges target="" />
     </js-module>
 
-    <asset src="www\plugins\com.phonegap.plugins.PushPlugin\src\windows8\backgroundTask.js" target="push-backgroundTask.js" />
+    <asset src="src/windows8/backgroundTask.js" target="push-backgroundTask.js" />
 
     <js-module src="" name="PushPluginBackgroundTask">
       <merges target="" />
