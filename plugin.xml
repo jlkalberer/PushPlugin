@@ -163,7 +163,7 @@
       <merges target="" />
     </js-module>
 
-    <asset src="src/windows8/backgroundTask.js" target="push-backgroundTask.js" />
+    <asset src="src/windows8/push-backgroundTask.js" target="push-backgroundTask.js" />
 
     <config-file target="package.phone.appxmanifest" parent="/Package/Applications/Application/Extensions">
         <Extension Category="windows.backgroundTasks" StartPage="push-backgroundTask.js">
