@@ -162,7 +162,7 @@
     <js-module src="src/windows8/PushPluginProxy.js" name="PushPlugin">
       <merges target="" />
     </js-module>
-    <js-module src="src/windows8/backgroundTask.js" name="PushPlugin">
+    <js-module src="src/windows8/backgroundTask.js" name="PushPluginBackgroundTask">
       <merges target="" />
     </js-module>
 
