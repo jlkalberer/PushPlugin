@@ -165,10 +165,6 @@
 
     <asset src="src/windows8/backgroundTask.js" target="push-backgroundTask.js" />
 
-    <js-module src="" name="PushPluginBackgroundTask">
-      <merges target="" />
-    </js-module>
-
     <config-file target="package.phone.appxmanifest" parent="/Package/Applications/Application/Extensions">
         <Extension Category="windows.backgroundTasks" StartPage="push-backgroundTask.js">
           <BackgroundTasks>
