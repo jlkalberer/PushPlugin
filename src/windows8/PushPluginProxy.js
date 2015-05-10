@@ -44,7 +44,7 @@ var helpers = {
         } catch (e) {
             WinJS.log && WinJS.log("Registration error: " + e.message, "sample", "error");
             fail(e);
-            unregisterBackgroundTask();
+            helpers.unregisterBackgroundTask();
         }
 
         return task;
@@ -64,6 +64,7 @@ var helpers = {
     }
 };
 
+var currentChannel = null;
 module.exports = {
     register: function (success, fail, args) {
         try {
@@ -71,27 +72,40 @@ module.exports = {
 
             Windows.Networking.PushNotifications.PushNotificationChannelManager.createPushNotificationChannelForApplicationAsync().then(
                 function (channel) {
+                    currentChannel = channel;
                     channel.addEventListener("pushnotificationreceived", onNotificationReceived);
                     success(channel);
-            }, fail);
-        } catch(ex) {
+                }, fail);
+        } catch (ex) {
             fail(ex);
         }
     },
-    registerBackground: function (success, fail, args) {
-        //TODO - Move this to a task which periodically re-registers the channel.
-        Windows.Networking.PushNotifications.PushNotificationChannelManager.
-            createPushNotificationChannelForApplicationAsync().then(success, fail);
+    unregister: function (success, fail, args) {
+        if (!currentChannel) {
+            return;
+        }
 
-        helpers.registerBackgroundTask({
-            taskName: pushNotificationTaskName,
-            importScript: args[0].importScript,
-            callback: args[0].callback,
-            taskEntryPoint: "www\\push-backgroundTask.js",
-        }, function() {}, fail);
+        currentChannel.close();
+        currentChannel = null;
     },
-    unregisterBackground: function(success, fail, args) {
-        if (unregisterBackgroundTask(pushNotificationTaskName)) {
+    registerBackground: function (success, fail, args) {
+        try {
+            //TODO - Move this to a task which periodically re-registers the channel.
+            Windows.Networking.PushNotifications.PushNotificationChannelManager.
+                createPushNotificationChannelForApplicationAsync().then(success, fail);
+
+            helpers.registerBackgroundTask({
+                taskName: pushNotificationTaskName,
+                importScript: args[0].importScript,
+                callback: args[0].callback,
+                taskEntryPoint: "www\\push-backgroundTask.js",
+            }, function () { }, fail);
+        } catch (ex) {
+            fail(ex);
+        }
+    },
+    unregisterBackground: function (success, fail, args) {
+        if (helpers.unregisterBackgroundTask(pushNotificationTaskName)) {
             success();
             return;
         }

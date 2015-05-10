@@ -38,6 +38,16 @@ describe('Plugin object (window.plugins)', function () {
         expect(window.plugins.pushNotification.unregister).toBeDefined();
         expect(typeof window.plugins.pushNotification.unregister == 'function').toBe(true);
     });
+
+    it("should contain a register background task function", function() {
+        expect(window.plugins.pushNotification.registerBackground).toBeDefined();
+        expect(typeof window.plugins.pushNotification.registerBackground == 'function').toBe(true);
+    });
+    
+    it("should contain an unregister background task function", function() {
+        expect(window.plugins.pushNotification.unregisterBackground).toBeDefined();
+        expect(typeof window.plugins.pushNotification.unregisterBackground == 'function').toBe(true);
+    });
     
     it("should contain a setApplicationIconBadgeNumber function", function() {
         expect(window.plugins.pushNotification.setApplicationIconBadgeNumber).toBeDefined();
