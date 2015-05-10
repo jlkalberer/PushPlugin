@@ -1,70 +1,69 @@
-// Copyright (c) Microsoft Open Technologies, Inc.  Licensed under the MIT license. 
+var pushNotificationTaskName = "PushNotificationTask";
 
-//
-// Register a background task with the specified name and taskEntryPoint
-//
-// taskName: A name for the background task.
-// taskEntryPoint: Task entry point for the background task.
-//
-function registerBackgroundTask(taskName, taskEntryPoint, success, fail) {
-    Windows.ApplicationModel.Background.BackgroundExecutionManager.requestAccessAsync();
+var helpers = {
+    registerBackgroundTask: function (options, success, fail) {
+        Windows.ApplicationModel.Background.BackgroundExecutionManager.requestAccessAsync();
 
-    var taskRegistered = false;
+        var taskRegistered = false;
 
-    var background = Windows.ApplicationModel.Background;
-    var iter = background.BackgroundTaskRegistration.allTasks.first();
-    var hascur = iter.hasCurrent;
+        var background = Windows.ApplicationModel.Background;
+        var iter = background.BackgroundTaskRegistration.allTasks.first();
+        var hascur = iter.hasCurrent;
 
-    while (hascur) {
-        var cur = iter.current.value;
+        while (hascur) {
+            var cur = iter.current.value;
 
-        if (cur.name === taskName) {
-            taskRegistered = true;
-            break;
+            if (cur.name === options.taskName) {
+                taskRegistered = true;
+                break;
+            }
+
+            hascur = iter.moveNext();
         }
-        
-        hascur = iter.moveNext();
-    }
 
-    if (taskRegistered == true) {
-        return iter.current;
-    }
-
-
-    var builder = new background.BackgroundTaskBuilder();
-    builder.Name = taskName;
-    builder.TaskEntryPoint = taskEntryPoint;
-    var trigger = new background.PushNotificationTrigger();
-    builder.setTrigger(trigger);
-    builder.addCondition(
-        new Windows.ApplicationModel.Background.SystemCondition(
-            Windows.ApplicationModel.Background.SystemConditionType.internetAvailable));
-
-    try {
-        var task = taskBuilder.register();
-        task.addEventListener("completed", success);
-        WinJS.log && WinJS.log("Background task registered", "sample", "status");
-    } catch (e) {
-        WinJS.log && WinJS.log("Registration error: " + e.message, "sample", "error");
-        fail(e);
-        unregisterBackgroundTask();
-    }
-
-    return task;
-}
-
-function unregisterBackgroundTask(taskName) {
-    var iter = background.BackgroundTaskRegistration.allTasks.first();
-    while (iter.hasCurrent) {
-        var task = iter.current.value;
-        if (task.name === taskName) {
-            task.unregister(true);
-            return true;
+        if (taskRegistered == true) {
+            return iter.current;
         }
-        iter.moveNext();
+
+
+        var builder = new background.BackgroundTaskBuilder();
+        builder.Name = options.taskName;
+        builder.taskEntryPoint = options.taskEntryPoint;
+        var trigger = new background.PushNotificationTrigger();
+        builder.setTrigger(trigger);
+        builder.addCondition(
+            new Windows.ApplicationModel.Background.SystemCondition(
+                Windows.ApplicationModel.Background.SystemConditionType.internetAvailable));
+
+        try {
+            var task = builder.register();
+            task.addEventListener("completed", success);
+
+            var localSettings = Windows.Storage.ApplicationData.current.localSettings;
+            localSettings["PushNotificationTask-config"] = JSON.stringify(options);
+
+            WinJS.log && WinJS.log("Background task registered", "sample", "status");
+        } catch (e) {
+            WinJS.log && WinJS.log("Registration error: " + e.message, "sample", "error");
+            fail(e);
+            unregisterBackgroundTask();
+        }
+
+        return task;
+    },
+    unregisterBackgroundTask: function (taskName) {
+        var iter = background.BackgroundTaskRegistration.allTasks.first();
+        while (iter.hasCurrent) {
+            var task = iter.current.value;
+            if (task.name === taskName) {
+                task.unregister(true);
+                return true;
+            }
+            iter.moveNext();
+        }
+        return false;
     }
-    return false;
-}
+};
 
 module.exports = {
     register: function (success, fail, args) {
@@ -80,11 +79,16 @@ module.exports = {
             fail(ex);
         }
     },
-    registerBackground: function(sucess, fail, args) {
-        registerBackgroundTask(args[0].name, args[0].callback, success, fail);
+    registerBackground: function (success, fail, args) {
+        helpers.registerBackgroundTask({
+            taskName: pushNotificationTaskName,
+            importScript: args[0].importScript,
+            callback: args[0].ecb,
+            taskFile: "www\\push-backgroundTask.js",
+        }, success, fail);
     },
     unregisterBackground: function(success, fail, args) {
-        if (unregisterBackgroundTask(args[0].name)) {
+        if (unregisterBackgroundTask(pushNotificationTaskName)) {
             success();
             return;
         }

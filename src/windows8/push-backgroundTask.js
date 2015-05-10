@@ -1,11 +1,22 @@
 (function () {
     "use strict";
 
+    var localSettings = Windows.Storage.ApplicationData.current.localSettings;
+    var options = JSON.parse(localSettings["PushNotificationTask-config"]);
+    importScripts(options.importScript);
+
     var backgroundTaskInstance = Windows.UI.WebUI.WebUIBackgroundTaskInstance.current;
     var canceled = false;
 
     function run() {
-        //make awesome!!!
+
+        var notificationDetails = backgroundTaskInstance.triggerDetails;
+
+        if (!notificationDetails) {
+            return;
+        }
+
+        window[options.callback](JSON.parse(notificationDetails.content));
         close();
     }
 
