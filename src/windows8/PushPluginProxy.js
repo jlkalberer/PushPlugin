@@ -80,12 +80,17 @@ module.exports = {
         }
     },
     registerBackground: function (success, fail, args) {
+        //TODO - Move this to a task which periodically re-registers the channel.
+        Windows.Networking.PushNotifications.PushNotificationChannelManager.
+            createPushNotificationChannelForApplicationAsync().then(function () {}, fail)
+
         helpers.registerBackgroundTask({
             taskName: pushNotificationTaskName,
             importScript: args[0].importScript,
             callback: args[0].ecb,
             taskFile: "www\\push-backgroundTask.js",
         }, success, fail);
+
     },
     unregisterBackground: function(success, fail, args) {
         if (unregisterBackgroundTask(pushNotificationTaskName)) {
