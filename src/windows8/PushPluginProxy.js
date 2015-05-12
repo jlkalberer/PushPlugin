@@ -1,4 +1,4 @@
-cordova.define("com.phonegap.plugins.PushPlugin.PushPlugin", function(require, exports, module) { var pushNotificationTaskName = "PushNotificationTask";
+var pushNotificationTaskName = "PushNotificationTask";
 
 var helpers = {
     registerBackgroundTask: function (options, success, fail) {
@@ -102,5 +102,3 @@ module.exports = {
     }
 };
 require("cordova/exec/proxy").add("PushPlugin", module.exports);
-
-});
