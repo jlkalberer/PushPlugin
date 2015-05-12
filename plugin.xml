@@ -187,10 +187,8 @@
           </BackgroundTasks>
         </Extension>
     </config-file>
-    <config-file target="package.windows80.appxmanifest" parent="/Package/Applications/Application">
-        <VisualElements ToastCapable="true">
-            <LockScreen Notification="badgeAndTileText" BadgeLogo="images\Square44x44Logo.png" />
-        </VisualElements>
+    <config-file target="package.windows80.appxmanifest" parent="/Package/Applications/Application/VisualElements">
+        <LockScreen Notification="badgeAndTileText" BadgeLogo="images\Square44x44Logo.png" />
     </config-file>
 
 
