@@ -1,3 +1,5 @@
+cordova.define("com.phonegap.plugins.PushPlugin.PushPlugin", function(require, exports, module) { var pushNotificationTaskName = "PushNotificationTask";
+
 var helpers = {
     registerBackgroundTask: function (options, success, fail) {
         Windows.ApplicationModel.Background.BackgroundExecutionManager.requestAccessAsync();
@@ -25,7 +27,7 @@ var helpers = {
 
 
         var builder = new background.BackgroundTaskBuilder();
-        builder.name = options.taskName;
+        builder.Name = options.taskName;
         builder.taskEntryPoint = options.taskEntryPoint;
         var trigger = new background.PushNotificationTrigger();
         builder.setTrigger(trigger);
@@ -38,19 +40,18 @@ var helpers = {
             task.addEventListener("completed", success);
 
             var localSettings = Windows.Storage.ApplicationData.current.localSettings;
-            localSettings.values["PushNotificationTask-config"] = JSON.stringify(options);
+            localSettings["PushNotificationTask-config"] = JSON.stringify(options);
 
             WinJS.log && WinJS.log("Background task registered", "sample", "status");
         } catch (e) {
             WinJS.log && WinJS.log("Registration error: " + e.message, "sample", "error");
             fail(e);
-            helpers.unregisterBackgroundTask();
+            unregisterBackgroundTask();
         }
 
         return task;
     },
     unregisterBackgroundTask: function (taskName) {
-        var background = Windows.ApplicationModel.Background;
         var iter = background.BackgroundTaskRegistration.allTasks.first();
         while (iter.hasCurrent) {
             var task = iter.current.value;
@@ -64,7 +65,6 @@ var helpers = {
     }
 };
 
-var currentChannel = null;
 module.exports = {
     register: function (success, fail, args) {
         try {
@@ -72,40 +72,28 @@ module.exports = {
 
             Windows.Networking.PushNotifications.PushNotificationChannelManager.createPushNotificationChannelForApplicationAsync().then(
                 function (channel) {
-                    currentChannel = channel;
                     channel.addEventListener("pushnotificationreceived", onNotificationReceived);
                     success(channel);
-                }, fail);
-        } catch (ex) {
+            }, fail);
+        } catch(ex) {
             fail(ex);
         }
-    },
-    unregister: function (success, fail, args) {
-        if (!currentChannel) {
-            return;
-        }
-
-        currentChannel.close();
-        currentChannel = null;
     },
     registerBackground: function (success, fail, args) {
-        try {
-            //TODO - Move this to a task which periodically re-registers the channel.
-            Windows.Networking.PushNotifications.PushNotificationChannelManager.
-                createPushNotificationChannelForApplicationAsync().then(success, fail);
+        //TODO - Move this to a task which periodically re-registers the channel.
+        Windows.Networking.PushNotifications.PushNotificationChannelManager.
+            createPushNotificationChannelForApplicationAsync().then(function () {}, fail)
 
-            helpers.registerBackgroundTask({
-                taskName: pushNotificationTaskName,
-                importScript: args[0].importScript,
-                callback: args[0].callback,
-                taskEntryPoint: "www\\push-backgroundTask.js",
-            }, function () { }, fail);
-        } catch (ex) {
-            fail(ex);
-        }
+        helpers.registerBackgroundTask({
+            taskName: pushNotificationTaskName,
+            importScript: args[0].importScript,
+            callback: args[0].ecb,
+            taskFile: "www\\push-backgroundTask.js",
+        }, success, fail);
+
     },
-    unregisterBackground: function (success, fail, args) {
-        if (helpers.unregisterBackgroundTask(pushNotificationTaskName)) {
+    unregisterBackground: function(success, fail, args) {
+        if (unregisterBackgroundTask(pushNotificationTaskName)) {
             success();
             return;
         }
@@ -113,3 +101,6 @@ module.exports = {
         fail();
     }
 };
+require("cordova/exec/proxy").add("PushPlugin", module.exports);
+
+});
