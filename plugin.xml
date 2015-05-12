@@ -164,8 +164,8 @@
     </js-module>
 
     <asset src="src/windows8/push-backgroundTask.js" target="push-backgroundTask.js" />
-    <asset src="src/windows8/Square44x44Logo.scale-180.png" target="images\Square44x44Logo.scale-180.png" />
-    <asset src="src/windows8/Square58x58Logo.scale-240.png" target="images\Square58x58Logo.scale-240.png" />
+    <asset src="src/windows8/Square44x44Logo.png" target="images\Square44x44Logo.png" />
+    <asset src="src/windows8/Square58x58Logo.png" target="images\Square58x58Logo.png" />
 
     <config-file target="package.phone.appxmanifest" parent="/Package/Applications/Application/Extensions">
         <Extension Category="windows.backgroundTasks" StartPage="www\push-backgroundTask.js">
