@@ -165,6 +165,7 @@
 
     <asset src="src/windows8/push-backgroundTask.js" target="push-backgroundTask.js" />
     <asset src="src/windows8/Square44x44Logo.scale-180.png" target="images\Square44x44Logo.scale-180.png" />
+    <asset src="src/windows8/Square44x44Logo.scale-180.png" target="images\Square58x58Logo.scale-180.png" />
 
     <config-file target="package.phone.appxmanifest" parent="/Package/Applications/Application/Extensions">
         <Extension Category="windows.backgroundTasks" StartPage="www\push-backgroundTask.js">
@@ -187,11 +188,15 @@
           </BackgroundTasks>
         </Extension>
     </config-file>
+
+    <config-file target="package.phone.appxmanifest" parent="/Package/Applications/Application/m3:VisualElements">
+        <m3:LockScreen Notification="badgeAndTileText" BadgeLogo="images\Square58x58Logo.png" />
+    </config-file>
+    <config-file target="package.windows.appxmanifest" parent="/Package/Applications/Application/m2:VisualElements">
+        <m2:LockScreen Notification="badgeAndTileText" BadgeLogo="images\Square44x44Logo.png" />
+    </config-file>
     <config-file target="package.windows80.appxmanifest" parent="/Package/Applications/Application/VisualElements">
         <LockScreen Notification="badgeAndTileText" BadgeLogo="images\Square44x44Logo.png" />
     </config-file>
-
-
   </platform>
-
 </plugin>
