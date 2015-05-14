@@ -1,4 +1,4 @@
-var pushNotificationTaskName = "PushNotificationTask";
+﻿var pushNotificationTaskName = "PushNotificationTask";
 
 var helpers = {
     registerBackgroundTask: function (options, success, fail) {
@@ -13,10 +13,11 @@ var helpers = {
         while (hascur) {
             var cur = iter.current.value;
 
-            if (cur.name === options.taskName) {
-                taskRegistered = true;
-                break;
-            }
+            //if (cur.name === options.taskName) {
+            //    taskRegistered = true;
+            //    break;
+            //}
+            helpers.unregisterBackgroundTask(cur.name);
 
             hascur = iter.moveNext();
         }
@@ -27,7 +28,7 @@ var helpers = {
 
 
         var builder = new background.BackgroundTaskBuilder();
-        builder.Name = options.taskName;
+        builder.name = options.taskName;
         builder.taskEntryPoint = options.taskEntryPoint;
         var trigger = new background.PushNotificationTrigger();
         builder.setTrigger(trigger);
@@ -52,6 +53,7 @@ var helpers = {
         return task;
     },
     unregisterBackgroundTask: function (taskName) {
+        var background = Windows.ApplicationModel.Background;
         var iter = background.BackgroundTaskRegistration.allTasks.first();
         while (iter.hasCurrent) {
             var task = iter.current.value;
@@ -72,7 +74,9 @@ module.exports = {
 
             Windows.Networking.PushNotifications.PushNotificationChannelManager.createPushNotificationChannelForApplicationAsync().then(
                 function (channel) {
-                    channel.addEventListener("pushnotificationreceived", onNotificationReceived);
+                    channel.addEventListener("pushnotificationreceived", function(response) {
+                        onNotificationReceived(JSON.parse(response.rawNotification.content));
+                    });
                     success(channel);
             }, fail);
         } catch(ex) {
@@ -82,18 +86,18 @@ module.exports = {
     registerBackground: function (success, fail, args) {
         //TODO - Move this to a task which periodically re-registers the channel.
         Windows.Networking.PushNotifications.PushNotificationChannelManager.
-            createPushNotificationChannelForApplicationAsync().then(function () {}, fail)
+            createPushNotificationChannelForApplicationAsync().then(function() {}, fail);
 
         helpers.registerBackgroundTask({
             taskName: pushNotificationTaskName,
             importScript: args[0].importScript,
             callback: args[0].ecb,
-            taskFile: "www\\push-backgroundTask.js",
+            taskEntryPoint: args[0].entryPoint || "www\\push-backgroundTask.js",
         }, success, fail);
 
     },
     unregisterBackground: function(success, fail, args) {
-        if (unregisterBackgroundTask(pushNotificationTaskName)) {
+        if (helpers.unregisterBackgroundTask(pushNotificationTaskName)) {
             success();
             return;
         }

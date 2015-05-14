@@ -1,4 +1,4 @@
-var PushNotification = function() {
+﻿var PushNotification = function() {
 };
 
 var callFunction = function (name, successCallback, errorCallback, args) {

@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
     "use strict";
 
     var localSettings = Windows.Storage.ApplicationData.current.localSettings;
